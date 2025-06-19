@@ -1,1 +1,8 @@
 node_modules
+
+# shapefiles and info
+*.shp
+*.shx
+*.dbf
+*.prj
+*.cpg
