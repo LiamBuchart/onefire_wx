@@ -1,13 +1,13 @@
 import type { ExternalPluginConfig } from '@windy/interfaces';
 
 const config: ExternalPluginConfig = {
-    name: 'windy-plugin-my-plugin',
+    name: 'windy-plugin-canada-wildfire-perimeters',
     version: '0.1.0',
-    icon: '🔌',
-    title: 'This is my first plugin',
-    description: 'This is my first plugin.',
-    author: 'John Doe (optional company name)',
-    repository: 'https://github.com/windycom/windy-plugin-template',
+    icon: '🔥',
+    title: 'Canada Wildfire Perimeters',
+    description: 'Overlay for Canada wildfire perimeters from the Canadian Wildland Fire Information System (CWFIS)',
+    author: 'Liam Buchart (UBC)',
+    repository: 'https://github.com/LiamBuchart/onefire_wx',
     desktopUI: 'rhpane',
     mobileUI: 'fullscreen',
     routerPath: '/my-plugin',

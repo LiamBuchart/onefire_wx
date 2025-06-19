@@ -1,13 +1,17 @@
 import subprocess
-import shapefile
+import pathlib
+from pathlib import Path
 import os
 import geopandas as gpd
 
 # use wget to download the file
 extensions = [".shp", ".shx", ".dbf", ".prj"]
 link = "https://cwfis.cfs.nrcan.gc.ca/downloads/hotspots/perimeters"
-cwd = os.getcwd()
 json_file = "all_perimeters.json"
+json_dir = "/static/data/"
+
+cwd = Path.cwd()
+parent = cwd.parent
 
 def execute_command(command):
 
@@ -48,9 +52,11 @@ if os.path.exists("perimeters.shp"):
     for ext in extensions:
         os.remove(f"perimeters{ext}")   
         
-        # remove the geojson as well
-        os.remove(json_file)
-
+# remove the geojson from static/data
+if os.path.exists(str(parent) + json_dir + json_file):
+    json_path = Path(parent, json_dir, json_file)
+    pathlib.Path.unlink(str(parent) + json_path + json_file)
+ 
 print("Executing command to download NFDB fire polygons...")
 
 # Download the NFDB fire polygons using wget
@@ -70,6 +76,6 @@ print("Reading NFDB fire polygons...")
 print("Removing fires with Area < 200 ha...")
 myshapefile = myshapefile[myshapefile['AREA'] >= 200]
 
-myshapefile.to_file(json_file, driver='GeoJSON')
+myshapefile.to_file(str(parent) + json_dir + json_file, driver='GeoJSON')
 print(f"NFDB fire polygons saved to {json_file}")
     
