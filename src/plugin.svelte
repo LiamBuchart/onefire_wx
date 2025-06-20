@@ -1,97 +1,95 @@
-<div class="plugin__mobile-header">
-    { title }
-</div>
-<section class="plugin__content">
-    <div
-        class="plugin__title plugin__title--chevron-back"
-        on:click={ () => bcast.emit('rqstOpen', 'menu') }
-    >
-    { title }
-    </div>
-
-    <p class="size-l">
-        Add Canadian wildfire perimeters to the map.
-    </p>
-
-    <p>
-        At this time all perimeters > 200 hectares are displayed.
-    </p>
-
-    <p>
-        Visit https://cwfis.cfs.nrcan.gc.ca/home for more information.
-    </p>
-
-    <p class="mt-30 mb-30">
-        <img src="https://www.windy.com/img/windy-plugins/borat-great-success-ed.png" alt="Borat" />
-    </p>
-    
-    <div class="centered m-15">
-        <button
-            class="button button--variant-orange"
-            class:button--loading={ loader }
-            on:click={ getMyLoc }
-        >
-            Show my location
-        </button>
-    </div>
-
-    <hr />
-
-    {#each [ 1, 2, 3, 4, 5, 6, 7, 8, 9 ] as _line  }
-        <p>
-           The major advantage of rhpane and mobile fullscreen layout is ability to display a lot of information in a single view.
-        </p>
-        <p>
-            Overflowed content is scrollable and it works like a charm especially on mobile devices.
-        </p>
+<div class="size-s mb-5">Select a country:</div>
+<select bind:value={selectedCC}>
+    {#each countries as country}
+        {@const { cc, title } = country}
+        <option value={ cc }>
+            { title }
+        </option>
     {/each}
+</select>
+{#if !error}
+    <small class="size-xs mt-10">
+        Plot latest wildfire perimeters for a specified country.
+         <b>These are estimated</b> by satellite and should only be used for informational purposes.
+    </small>
+    <small class="size-xxs mt-5">
+        Canadian Perimeters Provided by <a href="https://cwfis.cfs.nrcan.gc.ca/downloads/hotspots/perimeters" class="clickable dotted" target="_top">CWFIS</a>
+    </small>
+{:else}
+    <small class="rounded-box bg-error size-s mt-10">
+        Error: {error}
+    </small>
+{/if}
 
-</section>
 <script lang="ts">
-    import bcast from "@windy/broadcast";
-    import { map, markers } from '@windy/map';
-    import { getGPSlocation } from '@windy/geolocation';
+    import store from '@windy/store';
+    import { map } from '@windy/map';
 
+    import { countries } from "./countries";
     import { onDestroy } from 'svelte';
 
-    import config from './pluginConfig';
+    const dataLocation = '/Users/liambuchart/Documents/PYTHON/onefire_wx/static/data/';
 
-    const { title } = config;
+    const userCC = store.get('country');
+    const isCountrySupported = countries.some(c => c.cc === userCC);
 
-    let marker: L.Marker | null = null;
-    let loader = false;
+    let selectedCC: string = isCountrySupported ? userCC : 'cz';
+    let error: string | null = null;
+    let layer: L.GeoJSON | null = null;
 
-    const getMyLoc = async () => {
-        loader = true;
-        const loc = await getGPSlocation();
-        loader = false;
-        if (loc) {
-            const { lat, lon: lng } = loc;
-            map.setView({ lat, lng }, 8);
-            marker = new L.Marker({ lat, lng }, { icon: markers.myLocationIcon }).addTo(map);
+    $: loadSelectedCoutry( selectedCC )
+
+    const loadSelectedCoutry = async (cc: string) => {
+        error = null;
+
+        const country = countries.find(c => c.cc === cc);
+        if(!country) {
+            return;
+        }
+        const { name, bounds } = country;
+
+        try {
+            const geoJson = await fetch(`${dataLocation}/${name}_perimeters.geojson`);
+            const geoJsonData = await geoJson.json();
+
+            if(layer) {
+                layer.remove();
+            }
+
+            layer = new L.GeoJSON(geoJsonData, {
+                style: {
+                    color: '#76f5f7',
+                    weight: 1,
+                    opacity: 0.7,
+                    fillOpacity: 0.2,
+                    fillColor: 'transparent',
+                },
+            });
+
+            map.addLayer(layer);
+            map.fitBounds(bounds[0]);
+
+        } catch (e) {
+            error = e;
         }
     };
 
     onDestroy(() => {
-        // Your plugin will be destroyed
-        // Make sure you cleanup after yourself
-        if(marker) {
-            marker.remove();
-            marker = null;
+        if(layer) {
+            layer.remove();
         }
     });
 </script>
 
 <style lang="less">
-    p {
-        line-height: 1.8;
-    }
-    code {
-        color: lightgray;
-    }
-    img {
+    small {
         display: block;
-        width: 70%;
-        margin: 0 auto;
+        line-height: 1.5;
+    }
+
+    select {
+        &:focus {
+            outline: none;
+        }
     }
 </style>
