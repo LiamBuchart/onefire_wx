@@ -35,5 +35,8 @@
     "homepage": "https://docs.windy-plugins.com/",
     "dependencies": {
         "@windycom/plugin-devtools": "^3.0.0"
+    },
+    "devDependencies": {
+        "@rollup/plugin-json": "^6.1.0"
     }
 }

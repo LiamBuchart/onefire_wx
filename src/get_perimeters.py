@@ -7,7 +7,7 @@ import geopandas as gpd
 # use wget to download the file
 extensions = [".shp", ".shx", ".dbf", ".prj"]
 link = "https://cwfis.cfs.nrcan.gc.ca/downloads/hotspots/perimeters"
-json_file = "canada_perimeters.geojson"
+json_file = "Canada_perimeters.geojson"
 json_dir = "/static/data/"
 
 cwd = Path.cwd()

@@ -13,7 +13,7 @@ export const countriesOriginal: CountryOriginal[] = [
         name: 'canada_ca',
         bounds: [
             [
-                [41.6765556, -136.4300944],
+                [40, -136],
                 [68.9703832, -51],
             ],
         ],

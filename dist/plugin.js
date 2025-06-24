@@ -9,8 +9,8 @@ const __pluginConfig =  {
   "desktopUI": "embedded",
   "mobileUI": "small",
   "routerPath": "/canfire-perimeters",
-  "built": 1750398219986,
-  "builtReadable": "2025-06-20T05:43:39.986Z"
+  "built": 1750740566433,
+  "builtReadable": "2025-06-24T04:49:26.433Z"
 };
 
 // transformCode: import store from '@windy/store';
@@ -659,8 +659,8 @@ const countriesOriginal = [
         bounds: [
             [
                 [
-                    41.6765556,
-                    -136.4300944
+                    40,
+                    -136
                 ],
                 [
                     68.9703832,
@@ -895,8 +895,6 @@ function create_fragment(ctx) {
 	};
 }
 
-const dataLocation = '/Users/liambuchart/Documents/PYTHON/onefire_wx/static/data/';
-
 function instance($$self, $$props, $$invalidate) {
 	const userCC = store.get('country');
 	const isCountrySupported = countries.some(c => c.cc === userCC);
@@ -915,7 +913,7 @@ function instance($$self, $$props, $$invalidate) {
 		const { name, bounds } = country;
 
 		try {
-			const geoJson = await fetch(`${dataLocation}/${name}_perimeters.geojson`);
+			const geoJson = await fetch('./Canada_perimeters.geojson');
 			const geoJsonData = await geoJson.json();
 
 			if (layer) {

@@ -28,7 +28,7 @@
     import { countries } from "./countries";
     import { onDestroy } from 'svelte';
 
-    const dataLocation = '/Users/liambuchart/Documents/PYTHON/onefire_wx/static/data/';
+    const dataLocation = '/Users/liambuchart/Documents/PYTHON/onefire_wx/static/data';
 
     const userCC = store.get('country');
     const isCountrySupported = countries.some(c => c.cc === userCC);
@@ -49,8 +49,10 @@
         const { name, bounds } = country;
 
         try {
-            const geoJson = await fetch(`${dataLocation}/${name}_perimeters.geojson`);
+            const geoJson = await fetch('./Canada_perimeters.geojson');
             const geoJsonData = await geoJson.json();
+            //const geoJson = await fetch(`${dataLocation}/${name}_perimeters.geojson.json`);
+            //const geoJsonData = await geoJson.json();
 
             if(layer) {
                 layer.remove();
