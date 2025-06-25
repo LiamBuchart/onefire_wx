@@ -1,82 +1,84 @@
-<div class="size-s mb-5">Select a country:</div>
-<select bind:value={selectedCC}>
-    {#each countries as country}
-        {@const { cc, title } = country}
-        <option value={ cc }>
-            { title }
-        </option>
-    {/each}
-</select>
-{#if !error}
-    <small class="size-xs mt-10">
+<div class="plugin__mobile-header">
+    { title }
+</div>
+<section class="plugin__content">
+    <div
+        class="plugin__title plugin__title--chevron-back"
+        on:click={ () => bcast.emit('rqstOpen', 'menu') }
+    >
+    { title }
+    </div>
+
+    <p class="size-l">
         Plot latest wildfire perimeters for a specified country.
-         <b>These are estimated</b> by satellite and should only be used for informational purposes.
-    </small>
-    <small class="size-xxs mt-5">
-        Canadian Perimeters Provided by <a href="https://cwfis.cfs.nrcan.gc.ca/downloads/hotspots/perimeters" class="clickable dotted" target="_top">CWFIS</a>
-    </small>
-{:else}
-    <small class="rounded-box bg-error size-s mt-10">
-        Error: {error}
-    </small>
-{/if}
+        <b>These are estimated</b> by satellite and should only be used for informational purposes.
+    </p>
 
+    <p>
+        Canadian Perimeters Provided by <a href="https://cwfis.cfs.nrcan.gc.ca/downloads/hotspots" class="clickable dotted" target="_top">CWFIS</a>
+    </p>
+
+    <p class="mt-30 mb-30">
+        <img src="https://www.windy.com/img/windy-plugins/borat-great-success-ed.png" alt="Borat" />
+    </p>
+
+    <p>
+        Please allow GPS location in your browser to see your location on the map.
+    </p>
+    <div class="centered m-15">
+        <button
+            class="button button--variant-orange"
+            class:button--loading={ loader }
+            on:click={ getMyLoc }
+        >
+            Show my location
+        </button>
+    </div>
+
+    <hr />
+
+</section>
 <script lang="ts">
-    import store from '@windy/store';
-    import { map } from '@windy/map';
+    import bcast from "@windy/broadcast";
+    import { map, markers } from '@windy/map';
+    //import { getGPSlocation } from '@windy/geolocation';
 
-    import { countries } from "./countries";
     import { onDestroy } from 'svelte';
 
-    const dataLocation = '/Users/liambuchart/Documents/PYTHON/onefire_wx/static/data';
+    import config from './pluginConfig';
 
-    const userCC = store.get('country');
-    const isCountrySupported = countries.some(c => c.cc === userCC);
+    const { title } = config;
 
-    let selectedCC: string = isCountrySupported ? userCC : 'cz';
-    let error: string | null = null;
+    // Load the GeoJSON data into the map
+    import geoJsonData from './static/data/Canada_perimeters.geojson';
+    console.log(geoJsonData)
+
+    //let marker: L.Marker | null = null;
     let layer: L.GeoJSON | null = null;
 
-    $: loadSelectedCoutry( selectedCC )
+    // add geojson layer to map
 
-    const loadSelectedCoutry = async (cc: string) => {
-        error = null;
+    //const geoJsonData = await geoJson.json();
 
-        const country = countries.find(c => c.cc === cc);
-        if(!country) {
-            return;
-        }
-        const { name, bounds } = country;
+    if(layer) {
+        layer.remove();
+    }
 
-        try {
-            const geoJson = await fetch('./Canada_perimeters.geojson');
-            const geoJsonData = await geoJson.json();
-            //const geoJson = await fetch(`${dataLocation}/${name}_perimeters.geojson.json`);
-            //const geoJsonData = await geoJson.json();
+    layer = new L.GeoJSON(geoJsonData, {
+        style: {
+            color: '#76f5f7',
+            weight: 2,
+            opacity: 0.7,
+            fillOpacity: 0.2,
+        },
+    });
 
-            if(layer) {
-                layer.remove();
-            }
-
-            layer = new L.GeoJSON(geoJsonData, {
-                style: {
-                    color: '#76f5f7',
-                    weight: 1,
-                    opacity: 0.7,
-                    fillOpacity: 0.2,
-                    fillColor: 'transparent',
-                },
-            });
-
-            map.addLayer(layer);
-            map.fitBounds(bounds[0]);
-
-        } catch (e) {
-            error = e;
-        }
-    };
+    map.addLayer(layer);
+    //map.fitBounds(L.geoJSON(geoJsonData).getBounds());
 
     onDestroy(() => {
+        // Your plugin will be destroyed
+        // Make sure you cleanup after yourself
         if(layer) {
             layer.remove();
         }
@@ -84,14 +86,16 @@
 </script>
 
 <style lang="less">
-    small {
-        display: block;
-        line-height: 1.5;
+    p {
+        line-height: 1.8;
     }
-
-    select {
-        &:focus {
-            outline: none;
-        }
+    code {
+        color: lightgray;
+    }
+    img {
+        display: block;
+        width: 70%;
+        margin: 0 auto;
     }
 </style>
+

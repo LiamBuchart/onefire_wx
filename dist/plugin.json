@@ -6,9 +6,9 @@
   "description": "Overlay for wildfire perimeters from the Canadian Wildland Fire Information System (CWFIS)",
   "author": "Liam Buchart (UBC)",
   "repository": "https://github.com/LiamBuchart/onefire_wx",
-  "desktopUI": "embedded",
-  "mobileUI": "small",
+  "desktopUI": "rhpane",
+  "mobileUI": "fullscreen",
   "routerPath": "/canfire-perimeters",
-  "built": 1750740566437,
-  "builtReadable": "2025-06-24T04:49:26.437Z"
+  "built": 1750822714952,
+  "builtReadable": "2025-06-25T03:38:34.952Z"
 }

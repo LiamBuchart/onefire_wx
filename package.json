@@ -37,6 +37,7 @@
         "@windycom/plugin-devtools": "^3.0.0"
     },
     "devDependencies": {
-        "@rollup/plugin-json": "^6.1.0"
+        "@rollup/plugin-json": "^6.1.0",
+        "svelte-geolocation": "^1.0.0"
     }
 }

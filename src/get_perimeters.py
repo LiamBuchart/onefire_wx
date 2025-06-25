@@ -11,7 +11,7 @@ json_file = "Canada_perimeters.geojson"
 json_dir = "/static/data/"
 
 cwd = Path.cwd()
-parent = cwd.parent
+
 
 def execute_command(command):
 
@@ -53,9 +53,9 @@ if os.path.exists("perimeters.shp"):
         os.remove(f"perimeters{ext}")   
         
 # remove the geojson from static/data
-if os.path.exists(str(parent) + json_dir + json_file):
-    json_path = Path(parent, json_dir, json_file)
-    pathlib.Path.unlink(str(parent) + json_path + json_file)
+if os.path.exists(str(cwd) + json_dir + json_file):
+    json_path = Path(cwd, json_dir, json_file)
+    pathlib.Path.unlink(str(cwd) + json_path + json_file)
  
 print("Executing command to download NFDB fire polygons...")
 
@@ -76,6 +76,6 @@ print("Reading NFDB fire polygons...")
 print("Removing fires with Area < 200 ha...")
 myshapefile = myshapefile[myshapefile['AREA'] >= 200]
 
-myshapefile.to_file(str(parent) + json_dir + json_file, driver='GeoJSON')
+myshapefile.to_file(str(cwd) + json_dir + json_file, driver='GeoJSON')
 print(f"NFDB fire polygons saved to {json_file}")
     

@@ -8,8 +8,8 @@ const config: ExternalPluginConfig = {
     description: 'Overlay for wildfire perimeters from the Canadian Wildland Fire Information System (CWFIS)',
     author: 'Liam Buchart (UBC)',
     repository: 'https://github.com/LiamBuchart/onefire_wx',
-    desktopUI: 'embedded',
-    mobileUI: 'small',
+    desktopUI: 'rhpane',
+    mobileUI: 'fullscreen',
     routerPath: '/canfire-perimeters',
 };
 

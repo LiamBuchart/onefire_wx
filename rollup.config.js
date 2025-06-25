@@ -12,6 +12,7 @@ import { less } from 'svelte-preprocess-less';
 import sveltePreprocess from 'svelte-preprocess';
 
 import { transformCodeToESMPlugin, keyPEM, certificatePEM } from '@windycom/plugin-devtools';
+import json from '@rollup/plugin-json';
 
 const useSourceMaps = true;
 
@@ -78,6 +79,7 @@ export default {
         clearScreen: false,
     },
     plugins: [
+        json(),
         rollupSvelte({
             emitCss: false,
             preprocess: {
