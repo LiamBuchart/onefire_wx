@@ -7,11 +7,11 @@ import geopandas as gpd
 # use wget to download the file
 extensions = [".shp", ".shx", ".dbf", ".prj"]
 link = "https://cwfis.cfs.nrcan.gc.ca/downloads/hotspots/perimeters"
-json_file = "Canada_perimeters.geojson"
-json_dir = "/static/data/"
+json_file = "Canada_perimeters.json"
+json_dir = "/data/"  # from parent
 
 cwd = Path.cwd()
-
+parent = cwd.parent
 
 def execute_command(command):
 
@@ -76,6 +76,7 @@ print("Reading NFDB fire polygons...")
 print("Removing fires with Area < 200 ha...")
 myshapefile = myshapefile[myshapefile['AREA'] >= 200]
 
+myshapefile.to_json()
 myshapefile.to_file(str(cwd) + json_dir + json_file, driver='GeoJSON')
 print(f"NFDB fire polygons saved to {json_file}")
     

@@ -19,19 +19,20 @@
     </p>
 
     <p class="mt-30 mb-30">
-        <img src="https://www.windy.com/img/windy-plugins/borat-great-success-ed.png" alt="Borat" />
+        <img src="{base}/ag_firepolys_2024.png" alt="2024 Fires" />
     </p>
 
     <p>
-        Please allow GPS location in your browser to see your location on the map.
+       I hope these perimeters just load!
     </p>
+
     <div class="centered m-15">
         <button
-            class="button button--variant-orange"
+            class="button button--variant-red"
             class:button--loading={ loader }
-            on:click={ getMyLoc }
+            on:click={ getPerimeters }
         >
-            Show my location
+            Load the Canadian Perimeters
         </button>
     </div>
 
@@ -40,42 +41,53 @@
 </section>
 <script lang="ts">
     import bcast from "@windy/broadcast";
-    import { map, markers } from '@windy/map';
+    import { map } from '@windy/map';
     //import { getGPSlocation } from '@windy/geolocation';
 
     import { onDestroy } from 'svelte';
-
     import config from './pluginConfig';
 
     const { title } = config;
+    const base = '../static/data';
 
-    // Load the GeoJSON data into the map
-    import geoJsonData from './static/data/Canada_perimeters.geojson';
-    console.log(geoJsonData)
-
-    //let marker: L.Marker | null = null;
+    let error: string | null = null;
     let layer: L.GeoJSON | null = null;
+    let loader = false;
 
-    // add geojson layer to map
+    //import perimeters from './data/Canada_perimeters.json';
+    //L.GeoJSON(perimeters).addTo(map)
+    const getPerimeters = async () => {
 
-    //const geoJsonData = await geoJson.json();
+        error = null;
+        //loader = true;
 
-    if(layer) {
-        layer.remove();
-    }
+        try{
+            const response = await fetch(`./data/Canada_perimeters.json`)
+            const geoJsonData = await response.json();
+            
+            //loader = false;
+            if(layer) {
+                layer.remove();
+            }
 
-    layer = new L.GeoJSON(geoJsonData, {
-        style: {
-            color: '#76f5f7',
-            weight: 2,
-            opacity: 0.7,
-            fillOpacity: 0.2,
-        },
-    });
+            layer = new L.GeoJSON(geoJsonData, {
+                style: {
+                    color: '#76f5f7',
+                    weight: 2,
+                    opacity: 0.7,
+                    fillOpacity: 0.2,
+                    fillColor: 'transparent',
+                },
+            });
 
-    map.addLayer(layer);
-    //map.fitBounds(L.geoJSON(geoJsonData).getBounds());
+            map.addLayer(layer);
 
+        } catch (e) {
+            error = e;
+        }
+
+    };
+   
     onDestroy(() => {
         // Your plugin will be destroyed
         // Make sure you cleanup after yourself
