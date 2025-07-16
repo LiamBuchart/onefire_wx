@@ -54,15 +54,16 @@
     let layer: L.GeoJSON | null = null;
     let loader = false;
 
-    //import perimeters from './data/Canada_perimeters.json';
+    //import { perimeters } from './data/Canada_perimeters.json';
     //L.GeoJSON(perimeters).addTo(map)
+
     const getPerimeters = async () => {
 
         error = null;
         //loader = true;
 
         try{
-            const response = await fetch(`./data/Canada_perimeters.json`)
+            const response = await fetch('https://localhost:9999/Canada_perimeters.json')
             const geoJsonData = await response.json();
             
             //loader = false;

@@ -9,18 +9,15 @@ const __pluginConfig =  {
   "desktopUI": "rhpane",
   "mobileUI": "fullscreen",
   "routerPath": "/canfire-perimeters",
-  "built": 1750822714946,
-  "builtReadable": "2025-06-25T03:38:34.946Z"
+  "built": 1752628525375,
+  "builtReadable": "2025-07-16T01:15:25.375Z"
 };
 
 // transformCode: import bcast from '@windy/broadcast';
 const bcast = W.broadcast;
 
-// transformCode: import { map, markers } from '@windy/map';
-const { map, markers } = W.map;
-
-// transformCode: import { getGPSlocation } from '@windy/geolocation';
-const { getGPSlocation } = W.geolocation;
+// transformCode: import { map } from '@windy/map';
+const { map } = W.map;
 
 
 /** @returns {void} */
@@ -53,6 +50,23 @@ function is_function(thing) {
 /** @returns {boolean} */
 function safe_not_equal(a, b) {
 	return a != a ? b == b : a !== b || (a && typeof a === 'object') || typeof a === 'function';
+}
+
+let src_url_equal_anchor;
+
+/**
+ * @param {string} element_src
+ * @param {string} url
+ * @returns {boolean}
+ */
+function src_url_equal(element_src, url) {
+	if (element_src === url) return true;
+	if (!src_url_equal_anchor) {
+		src_url_equal_anchor = document.createElement('a');
+	}
+	// This is actually faster than doing URL(..).href
+	src_url_equal_anchor.href = url;
+	return element_src === src_url_equal_anchor.href;
 }
 
 /** @returns {boolean} */
@@ -186,7 +200,7 @@ function children(element) {
  * @returns {void} */
 function toggle_class(element, name, toggle) {
 	// The `!!` is required because an `undefined` flag means flipping the current state.
-	element.classList.toggle(name, !!toggle);
+	element.classList.toggle(name, false);
 }
 
 /**
@@ -624,6 +638,8 @@ function create_fragment(ctx) {
 	let p1;
 	let t10;
 	let p2;
+	let img;
+	let img_src_value;
 	let t11;
 	let p3;
 	let t13;
@@ -637,11 +653,11 @@ function create_fragment(ctx) {
 	return {
 		c() {
 			div0 = element("div");
-			div0.textContent = `${/*title*/ ctx[1]}`;
+			div0.textContent = `${/*title*/ ctx[0]}`;
 			t1 = space();
 			section = element("section");
 			div1 = element("div");
-			div1.textContent = `${/*title*/ ctx[1]}`;
+			div1.textContent = `${/*title*/ ctx[0]}`;
 			t3 = space();
 			p0 = element("p");
 
@@ -653,24 +669,27 @@ function create_fragment(ctx) {
 			p1.innerHTML = `Canadian Perimeters Provided by <a href="https://cwfis.cfs.nrcan.gc.ca/downloads/hotspots" class="clickable dotted" target="_top">CWFIS</a>`;
 			t10 = space();
 			p2 = element("p");
-			p2.innerHTML = `<img src="https://www.windy.com/img/windy-plugins/borat-great-success-ed.png" alt="Borat" class="svelte-1v3o2pt"/>`;
+			img = element("img");
 			t11 = space();
 			p3 = element("p");
-			p3.textContent = "Please allow GPS location in your browser to see your location on the map.";
+			p3.textContent = "I hope these perimeters just load!";
 			t13 = space();
 			div2 = element("div");
 			button = element("button");
-			button.textContent = "Show my location";
+			button.textContent = "Load the Canadian Perimeters";
 			t15 = space();
 			hr = element("hr");
 			attr(div0, "class", "plugin__mobile-header");
 			attr(div1, "class", "plugin__title plugin__title--chevron-back");
 			attr(p0, "class", "size-l svelte-1v3o2pt");
 			attr(p1, "class", "svelte-1v3o2pt");
+			if (!src_url_equal(img.src, img_src_value = "" + (base + "/ag_firepolys_2024.png"))) attr(img, "src", img_src_value);
+			attr(img, "alt", "2024 Fires");
+			attr(img, "class", "svelte-1v3o2pt");
 			attr(p2, "class", "mt-30 mb-30 svelte-1v3o2pt");
 			attr(p3, "class", "svelte-1v3o2pt");
-			attr(button, "class", "button button--variant-orange");
-			toggle_class(button, "button--loading", /*loader*/ ctx[0]);
+			attr(button, "class", "button button--variant-red");
+			toggle_class(button, "button--loading");
 			attr(div2, "class", "centered m-15");
 			attr(section, "class", "plugin__content");
 		},
@@ -685,6 +704,7 @@ function create_fragment(ctx) {
 			append(section, p1);
 			append(section, t10);
 			append(section, p2);
+			append(p2, img);
 			append(section, t11);
 			append(section, p3);
 			append(section, t13);
@@ -695,18 +715,14 @@ function create_fragment(ctx) {
 
 			if (!mounted) {
 				dispose = [
-					listen(div1, "click", /*click_handler*/ ctx[3]),
-					listen(button, "click", /*getMyLoc*/ ctx[2])
+					listen(div1, "click", /*click_handler*/ ctx[2]),
+					listen(button, "click", /*getPerimeters*/ ctx[1])
 				];
 
 				mounted = true;
 			}
 		},
-		p(ctx, [dirty]) {
-			if (dirty & /*loader*/ 1) {
-				toggle_class(button, "button--loading", /*loader*/ ctx[0]);
-			}
-		},
+		p: noop,
 		i: noop,
 		o: noop,
 		d(detaching) {
@@ -722,32 +738,46 @@ function create_fragment(ctx) {
 	};
 }
 
-function instance($$self, $$props, $$invalidate) {
+const base = '../static/data';
+
+function instance($$self) {
 	const { title } = config;
-	let marker = null;
-	let loader = false;
+	let layer = null;
 
-	const getMyLoc = async () => {
-		$$invalidate(0, loader = true);
-		const loc = await getGPSlocation();
-		$$invalidate(0, loader = false);
+	const getPerimeters = async () => {
 
-		if (loc) {
-			const { lat, lon: lng } = loc;
-			map.setView({ lat, lng }, 8);
-			marker = new L.Marker({ lat, lng }, { icon: markers.myLocationIcon }).addTo(map);
+		try {
+			const response = await fetch('https://localhost:9999/Canada_perimeters.json');
+			const geoJsonData = await response.json();
+
+			if (layer) {
+				layer.remove();
+			}
+
+			layer = new L.GeoJSON(geoJsonData,
+			{
+					style: {
+						color: '#76f5f7',
+						weight: 2,
+						opacity: 0.7,
+						fillOpacity: 0.2,
+						fillColor: 'transparent'
+					}
+				});
+
+			map.addLayer(layer);
+		} catch(e) {
 		}
 	};
 
 	onDestroy(() => {
-		if (marker) {
-			marker.remove();
-			marker = null;
+		if (layer) {
+			layer.remove();
 		}
 	});
 
 	const click_handler = () => bcast.emit('rqstOpen', 'menu');
-	return [loader, title, getMyLoc, click_handler];
+	return [title, getPerimeters, click_handler];
 }
 
 class Plugin extends SvelteComponent {
