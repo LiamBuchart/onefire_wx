@@ -40,15 +40,18 @@
 
 </section>
 <script lang="ts">
+
     import bcast from "@windy/broadcast";
     import { map } from '@windy/map';
+    import { onMount } from 'svelte';
+
     //import { getGPSlocation } from '@windy/geolocation';
 
     import { onDestroy } from 'svelte';
     import config from './pluginConfig';
 
     const { title } = config;
-    const base = '../static/data';
+    const base = '../static';
 
     let error: string | null = null;
     let layer: L.GeoJSON | null = null;
@@ -60,17 +63,19 @@
     const getPerimeters = async () => {
 
         error = null;
-        //loader = true;
 
         try{
-            const response = await fetch('https://localhost:9999/Canada_perimeters.json')
+            loader = true;
+            const response = await fetch('https://cwfis.cfs.nrcan.gc.ca/geoserver/public/ows?service=WFS&version=1.0.0&request=GetFeature&typeName=public:m3_polygons_current&outputFormat=json');
             const geoJsonData = await response.json();
+
+            loader = false;
             
-            //loader = false;
             if(layer) {
                 layer.remove();
             }
 
+            loader = true;
             layer = new L.GeoJSON(geoJsonData, {
                 style: {
                     color: '#76f5f7',
