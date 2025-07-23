@@ -1,85 +1,67 @@
-<div class="plugin__mobile-header">
-    { title }
-</div>
-<section class="plugin__content">
-    <div
-        class="plugin__title plugin__title--chevron-back"
-        on:click={ () => bcast.emit('rqstOpen', 'menu') }
-    >
-    { title }
-    </div>
+<div class="size-s mb-5">Select a country:</div>
+<select bind:value={selectedCC}>
+    {#each countries as country}
+        {@const { cc, title } = country}
+        <option value={ cc }>
+            { title }
+        </option>
+    {/each}
+</select>
+{#if !error}
+    <small class="size-xxs mt-10">
+        This is just example for our plugin developers,
+        so <b>airspace data are obsolete</b> and not updated ☠️
+    </small>
+    <small class="size-xxs mt-5">
+        Airspaces provided by <a href="https://www.openaip.net/" class="clickable dotted" target="_top">Open AIP</a>
+    </small>
+{:else}
+    <small class="rounded-box bg-error size-s mt-10">
+        Error: {error}
+    </small>
+{/if}
 
-    <p class="size-l">
-        Plot latest wildfire perimeters for a specified country.
-        <b>These are estimated</b> by satellite and should only be used for informational purposes.
-    </p>
-
-    <p>
-        Canadian Perimeters Provided by <a href="https://cwfis.cfs.nrcan.gc.ca/downloads/hotspots" class="clickable dotted" target="_top">CWFIS</a>
-    </p>
-
-    <p class="mt-30 mb-30">
-        <img src="{base}/ag_firepolys_2024.png" alt="2024 Fires" />
-    </p>
-
-    <p>
-       I hope these perimeters just load!
-    </p>
-
-    <div class="centered m-15">
-        <button
-            class="button button--variant-red"
-            class:button--loading={ loader }
-            on:click={ getPerimeters }
-        >
-            Load the Canadian Perimeters
-        </button>
-    </div>
-
-    <hr />
-
-</section>
 <script lang="ts">
-
-    import bcast from "@windy/broadcast";
+    import store from '@windy/store';
     import { map } from '@windy/map';
-    import { onMount } from 'svelte';
 
-    //import { getGPSlocation } from '@windy/geolocation';
-
+    import { countries } from "./countries";
     import { onDestroy } from 'svelte';
-    import config from './pluginConfig';
 
-    const { title } = config;
-    const base = '../static';
+    const dataLocation = 'https://cwfis.cfs.nrcan.gc.ca/geoserver/public/ows?service=WFS&version=1.0.0&request=GetFeature&typeName=public:m3_polygons_current&outputFormat=json';
 
+    const userCC = store.get('country');
+    const isCountrySupported = countries.some(c => c.cc === userCC);
+
+    let selectedCC: string = isCountrySupported ? userCC : 'cz';
     let error: string | null = null;
     let layer: L.GeoJSON | null = null;
-    let loader = false;
 
-    //import { perimeters } from './data/Canada_perimeters.json';
-    //L.GeoJSON(perimeters).addTo(map)
+    $: loadSelectedCoutry( selectedCC )
 
-    const getPerimeters = async () => {
-
+    const loadSelectedCoutry = async (cc: string) => {
         error = null;
 
-        try{
-            loader = true;
-            const response = await fetch('https://cwfis.cfs.nrcan.gc.ca/geoserver/public/ows?service=WFS&version=1.0.0&request=GetFeature&typeName=public:m3_polygons_current&outputFormat=json');
-            const geoJsonData = await response.json();
+        const country = countries.find(c => c.cc === cc);
+        if(!country) {
+            return;
+        }
+        const { bounds } = country;
 
-            loader = false;
-            
+        try {
+            const geoJson = await fetch(`${dataLocation}`);
+            console.log(geoJson);
+            const geoJsonData = await geoJson.json();
+            console.log(geoJsonData);
+
             if(layer) {
                 layer.remove();
             }
 
-            loader = true;
             layer = new L.GeoJSON(geoJsonData, {
                 style: {
                     color: '#76f5f7',
-                    weight: 2,
+                    weight: 1,
                     opacity: 0.7,
                     fillOpacity: 0.2,
                     fillColor: 'transparent',
@@ -87,16 +69,14 @@
             });
 
             map.addLayer(layer);
+            map.fitBounds(bounds[0]);
 
         } catch (e) {
             error = e;
         }
-
     };
-   
+
     onDestroy(() => {
-        // Your plugin will be destroyed
-        // Make sure you cleanup after yourself
         if(layer) {
             layer.remove();
         }
@@ -104,16 +84,14 @@
 </script>
 
 <style lang="less">
-    p {
-        line-height: 1.8;
-    }
-    code {
-        color: lightgray;
-    }
-    img {
+    small {
         display: block;
-        width: 70%;
-        margin: 0 auto;
+        line-height: 1.5;
+    }
+
+    select {
+        &:focus {
+            outline: none;
+        }
     }
 </style>
-
